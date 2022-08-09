@@ -1,0 +1,45 @@
+# version of docker-compose
+version: '3.9'
+# 'services' are equivalent to 'containers'
+services:
+  test-redis:
+    container_name: redis-db
+    # Use Docker Hub base image 'redis' 
+    image: 'redis'
+    volumes:
+      - ./redis-volume:/data
+  f1-news:
+    restart: on-failure
+    volumes:
+      - ./f1-news:/app
+      - /app/node_modules
+    environment:
+      - PORT=3000
+  nginx:
+    container_name: nginx_asoy
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+    - f1-news
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+volumes:
+  db:
